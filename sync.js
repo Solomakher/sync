@@ -283,16 +283,23 @@
     function refresh() { pullHistory(); }
 
     /* ==================================================================== */
-    /* НАША КНОПКА НАСТРОЕК ВМЕСТО КРАШАЩЕГОСЯ МЕНЮ                         */
+    /* НАША ИСПРАВЛЕННАЯ КНОПКА НАСТРОЕК                                    */
     /* ==================================================================== */
     function askSettings() {
         if (!window.Lampa || !Lampa.Input) return;
+        
+        // Первый шаг: вводим URL
         Lampa.Input.edit({
             title: 'URL базы Firebase (https://...)',
             value: baseUrl(), free: true, nosave: true
         }, function (url) {
             if (url) {
                 try { Lampa.Storage.set(ST_URL, url.trim()); } catch (e) {}
+                
+                // Второй шаг: вводим комнату, но только ПОСЛЕ того, как закроется первое окно.
+                // Lampa.Controller.toggle возвращает фокус на главную, закрывая текущий инпут.
+                Lampa.Controller.toggle('head');
+                
                 setTimeout(function() {
                     Lampa.Input.edit({
                         title: 'Имя комнаты (напр. family)',
@@ -304,7 +311,7 @@
                             if (enabled()) refresh();
                         }
                     });
-                }, 300);
+                }, 100);
             }
         });
     }
@@ -323,8 +330,6 @@
 
         injectHeaderButton();
         
-        if (!baseUrl()) setTimeout(askSettings, 2000);
-
         hookTimeline();
         hookPlayer();
         bindPlayer();
