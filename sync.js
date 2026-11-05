@@ -14,6 +14,12 @@
         return def;
     }
 
+    function setStorage(key, val) {
+        try {
+            if (window.Lampa && Lampa.Storage) Lampa.Storage.set(key, val);
+        } catch (e) {}
+    }
+
     function getBaseUrl() {
         var url = (storage(ST_URL, '') || '').toString().trim();
         return url.replace(/\/+$/, '');
@@ -83,9 +89,9 @@
     }
 
     function addSettings() {
-        try {
-            if (!window.Lampa || !Lampa.SettingsApi) return;
+        if (!window.Lampa || !Lampa.SettingsApi) return;
 
+        try {
             Lampa.SettingsApi.addComponent({
                 component: PLUGIN_ID,
                 name: PLUGIN_NAME,
@@ -96,12 +102,29 @@
                 component: PLUGIN_ID,
                 param: {
                     name: ST_URL,
-                    type: 'input',
+                    type: 'title',
+                    value: getBaseUrl() || 'Не указан',
                     default: ''
                 },
                 field: {
                     name: 'URL базы Firebase',
-                    description: 'Вставь адрес Realtime Database'
+                    description: 'Нажмите, чтобы ввести адрес базы'
+                },
+                onRender: function (item) {
+                    item.on('hover:enter', function () {
+                        Lampa.Input.edit({
+                            title: 'URL базы Firebase',
+                            value: getBaseUrl(),
+                            free: true,
+                            nosave: true
+                        }, function (new_val) {
+                            if (new_val) {
+                                setStorage(ST_URL, new_val.trim());
+                                item.find('.settings-param__value').text(new_val.trim());
+                                pullProgress();
+                            }
+                        });
+                    });
                 }
             });
 
@@ -109,12 +132,29 @@
                 component: PLUGIN_ID,
                 param: {
                     name: ST_ROOM,
-                    type: 'input',
+                    type: 'title',
+                    value: getRoom(),
                     default: 'my_home'
                 },
                 field: {
                     name: 'Имя комнаты',
-                    description: 'Одинаковое на ТВ и телефоне'
+                    description: 'Нажмите, чтобы задать имя комнаты'
+                },
+                onRender: function (item) {
+                    item.on('hover:enter', function () {
+                        Lampa.Input.edit({
+                            title: 'Имя комнаты',
+                            value: getRoom(),
+                            free: true,
+                            nosave: true
+                        }, function (new_val) {
+                            if (new_val) {
+                                setStorage(ST_ROOM, new_val.trim());
+                                item.find('.settings-param__value').text(new_val.trim());
+                                pullProgress();
+                            }
+                        });
+                    });
                 }
             });
         } catch (e) {}
