@@ -98,15 +98,21 @@
                 icon: '<svg height="36" viewBox="0 0 24 24" width="36" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>'
             });
 
+            // Используем стандартный тип 'input' - это железобетонно работает
             Lampa.SettingsApi.addParam({
                 component: PLUGIN_ID,
                 param: {
                     name: ST_URL,
-                    type: 'button'
+                    type: 'input',
+                    default: ''
                 },
                 field: {
                     name: 'URL базы Firebase',
-                    description: getBaseUrl() || 'Нажмите, чтобы ввести адрес'
+                    description: 'Адрес базы (нажмите для ввода)'
+                },
+                onChange: function (value) {
+                    setStorage(ST_URL, value);
+                    pullProgress();
                 }
             });
 
@@ -114,49 +120,18 @@
                 component: PLUGIN_ID,
                 param: {
                     name: ST_ROOM,
-                    type: 'button'
+                    type: 'input',
+                    default: 'my_home'
                 },
                 field: {
                     name: 'Имя комнаты',
-                    description: getRoom()
+                    description: 'Имя комнаты (нажмите для ввода)'
+                },
+                onChange: function (value) {
+                    setStorage(ST_ROOM, value);
+                    pullProgress();
                 }
             });
-
-            // Железобетонный перехват кликов по элементам меню через делегирование
-            if (window.$) {
-                $(document).off('click.fbsync').on('click.fbsync', '.settings-param', function () {
-                    var $this = $(this);
-                    var text = $this.text();
-
-                    if (text.indexOf('URL базы Firebase') !== -1) {
-                        Lampa.Input.edit({
-                            title: 'URL базы Firebase',
-                            value: getBaseUrl(),
-                            free: true,
-                            nosave: true
-                        }, function (new_val) {
-                            if (new_val !== undefined && new_val !== null) {
-                                setStorage(ST_URL, new_val.trim());
-                                $this.find('.settings-param__descr').text(new_val.trim() || 'Нажмите, чтобы ввести адрес');
-                                pullProgress();
-                            }
-                        });
-                    } else if (text.indexOf('Имя комнаты') !== -1) {
-                        Lampa.Input.edit({
-                            title: 'Имя комнаты',
-                            value: getRoom(),
-                            free: true,
-                            nosave: true
-                        }, function (new_val) {
-                            if (new_val !== undefined && new_val !== null) {
-                                setStorage(ST_ROOM, new_val.trim());
-                                $this.find('.settings-param__descr').text(new_val.trim() || 'my_home');
-                                pullProgress();
-                            }
-                        });
-                    }
-                });
-            }
         } catch (e) {}
     }
 
