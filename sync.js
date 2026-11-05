@@ -102,14 +102,33 @@
                 component: PLUGIN_ID,
                 param: {
                     name: ST_URL,
-                    type: 'static'
+                    type: 'button'
                 },
                 field: {
                     name: 'URL базы Firebase',
                     description: getBaseUrl() || 'Нажмите, чтобы ввести адрес'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: PLUGIN_ID,
+                param: {
+                    name: ST_ROOM,
+                    type: 'button'
                 },
-                onRender: function (item) {
-                    function openUrlInput() {
+                field: {
+                    name: 'Имя комнаты',
+                    description: getRoom()
+                }
+            });
+
+            // Железобетонный перехват кликов по элементам меню через делегирование
+            if (window.$) {
+                $(document).off('click.fbsync').on('click.fbsync', '.settings-param', function () {
+                    var $this = $(this);
+                    var text = $this.text();
+
+                    if (text.indexOf('URL базы Firebase') !== -1) {
                         Lampa.Input.edit({
                             title: 'URL базы Firebase',
                             value: getBaseUrl(),
@@ -118,28 +137,11 @@
                         }, function (new_val) {
                             if (new_val !== undefined && new_val !== null) {
                                 setStorage(ST_URL, new_val.trim());
-                                item.find('.settings-param__descr').text(new_val.trim() || 'Нажмите, чтобы ввести адрес');
+                                $this.find('.settings-param__descr').text(new_val.trim() || 'Нажмите, чтобы ввести адрес');
                                 pullProgress();
                             }
                         });
-                    }
-
-                    item.on('hover:enter click', openUrlInput);
-                }
-            });
-
-            Lampa.SettingsApi.addParam({
-                component: PLUGIN_ID,
-                param: {
-                    name: ST_ROOM,
-                    type: 'static'
-                },
-                field: {
-                    name: 'Имя комнаты',
-                    description: getRoom()
-                },
-                onRender: function (item) {
-                    function openRoomInput() {
+                    } else if (text.indexOf('Имя комнаты') !== -1) {
                         Lampa.Input.edit({
                             title: 'Имя комнаты',
                             value: getRoom(),
@@ -148,15 +150,13 @@
                         }, function (new_val) {
                             if (new_val !== undefined && new_val !== null) {
                                 setStorage(ST_ROOM, new_val.trim());
-                                item.find('.settings-param__descr').text(new_val.trim() || 'my_home');
+                                $this.find('.settings-param__descr').text(new_val.trim() || 'my_home');
                                 pullProgress();
                             }
                         });
                     }
-
-                    item.on('hover:enter click', openRoomInput);
-                }
-            });
+                });
+            }
         } catch (e) {}
     }
 
