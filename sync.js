@@ -102,29 +102,29 @@
                 component: PLUGIN_ID,
                 param: {
                     name: ST_URL,
-                    type: 'title',
-                    value: getBaseUrl() || 'Не указан',
-                    default: ''
+                    type: 'static'
                 },
                 field: {
                     name: 'URL базы Firebase',
-                    description: 'Нажмите, чтобы ввести адрес базы'
+                    description: getBaseUrl() || 'Нажмите, чтобы ввести адрес'
                 },
                 onRender: function (item) {
-                    item.on('hover:enter', function () {
+                    function openUrlInput() {
                         Lampa.Input.edit({
                             title: 'URL базы Firebase',
                             value: getBaseUrl(),
                             free: true,
                             nosave: true
                         }, function (new_val) {
-                            if (new_val) {
+                            if (new_val !== undefined && new_val !== null) {
                                 setStorage(ST_URL, new_val.trim());
-                                item.find('.settings-param__value').text(new_val.trim());
+                                item.find('.settings-param__descr').text(new_val.trim() || 'Нажмите, чтобы ввести адрес');
                                 pullProgress();
                             }
                         });
-                    });
+                    }
+
+                    item.on('hover:enter click', openUrlInput);
                 }
             });
 
@@ -132,29 +132,29 @@
                 component: PLUGIN_ID,
                 param: {
                     name: ST_ROOM,
-                    type: 'title',
-                    value: getRoom(),
-                    default: 'my_home'
+                    type: 'static'
                 },
                 field: {
                     name: 'Имя комнаты',
-                    description: 'Нажмите, чтобы задать имя комнаты'
+                    description: getRoom()
                 },
                 onRender: function (item) {
-                    item.on('hover:enter', function () {
+                    function openRoomInput() {
                         Lampa.Input.edit({
                             title: 'Имя комнаты',
                             value: getRoom(),
                             free: true,
                             nosave: true
                         }, function (new_val) {
-                            if (new_val) {
+                            if (new_val !== undefined && new_val !== null) {
                                 setStorage(ST_ROOM, new_val.trim());
-                                item.find('.settings-param__value').text(new_val.trim());
+                                item.find('.settings-param__descr').text(new_val.trim() || 'my_home');
                                 pullProgress();
                             }
                         });
-                    });
+                    }
+
+                    item.on('hover:enter click', openRoomInput);
                 }
             });
         } catch (e) {}
