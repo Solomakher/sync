@@ -1,5 +1,8 @@
 (function () {
     'use strict';
+
+    var PLUGIN_ID   = 'simple_fb_sync';
+    var PLUGIN_NAME = 'Синх. Firebase';
     
     var ST_URL  = 'simple_fb_url';
     var ST_ROOM = 'simple_fb_room';
@@ -82,31 +85,42 @@
         });
     }
 
-    function initSync() {
-        if (window.Lampa && Lampa.SettingsApi) {
-            try {
-                // Внедряемся паразитом в системную вкладку 'interface'
-                Lampa.SettingsApi.addParam({
-                    component: 'interface',
-                    param: { name: ST_URL, type: 'input', default: '' },
-                    field: { name: 'Firebase URL', description: 'База для синхронизации (нажми)' },
-                    onChange: function (val) {
-                        setStorage(ST_URL, val);
-                        pullProgress();
-                    }
-                });
+    function addSettings() {
+        if (!window.Lampa || !Lampa.SettingsApi) return;
 
-                Lampa.SettingsApi.addParam({
-                    component: 'interface',
-                    param: { name: ST_ROOM, type: 'input', default: 'my_home' },
-                    field: { name: 'Firebase Комната', description: 'Одинаковое имя на всех устройствах' },
-                    onChange: function (val) {
-                        setStorage(ST_ROOM, val);
-                        pullProgress();
-                    }
-                });
-            } catch (e) {}
-        }
+        Lampa.SettingsApi.addComponent({
+            component: PLUGIN_ID,
+            name: PLUGIN_NAME,
+            icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 10.6l4 2.4-.8 1.3-4.7-2.8V6h1.5v6.6z"/></svg>'
+        });
+
+        // ВОТ ОНА, МАГИЯ: передаем values: '' и "default" в кавычках
+        Lampa.SettingsApi.addParam({
+            component: PLUGIN_ID,
+            param: { name: ST_URL, type: 'input', values: '', "default": '' },
+            field: { name: 'URL базы Firebase', description: 'Нажми и введи ссылку (https://...)' },
+            onChange: function (val) {
+                setStorage(ST_URL, val);
+                pullProgress();
+            }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: PLUGIN_ID,
+            param: { name: ST_ROOM, type: 'input', values: '', "default": 'my_home' },
+            field: { name: 'Имя комнаты', description: 'Одинаковое на ТВ и телефоне' },
+            onChange: function (val) {
+                setStorage(ST_ROOM, val);
+                pullProgress();
+            }
+        });
+    }
+
+    function startPlugin() {
+        if (window[PLUGIN_ID + '_ready']) return;
+        window[PLUGIN_ID + '_ready'] = true;
+
+        addSettings();
 
         if (window.Lampa && Lampa.Timeline && Lampa.Timeline.listener) {
             Lampa.Timeline.listener.follow('update', function (data) {
@@ -127,10 +141,10 @@
     }
 
     if (window.appready) {
-        initSync();
+        startPlugin();
     } else if (window.Lampa && Lampa.Listener) {
         Lampa.Listener.follow('app', function (e) {
-            if (e.type === 'ready') initSync();
+            if (e.type === 'ready') startPlugin();
         });
     }
 })();
